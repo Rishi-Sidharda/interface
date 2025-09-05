@@ -5,6 +5,9 @@ export default function ResizableColumns() {
   const [leftWidth, setLeftWidth] = useState(30); // initial % for left
   const [isDragging, setIsDragging] = useState(false);
 
+  const minWidth = 15;
+  const maxWidth = 30;
+
   const handleMouseMove = (e: any) => {
     if (!isDragging) return;
 
@@ -12,8 +15,8 @@ export default function ResizableColumns() {
     let newLeftWidth = (e.clientX / screenWidth) * 100;
 
     // Keep within 15% - 45% to avoid breaking layout
-    if (newLeftWidth < 15) newLeftWidth = 15;
-    if (newLeftWidth > 30) newLeftWidth = 30;
+    if (newLeftWidth < minWidth) newLeftWidth = minWidth;
+    if (newLeftWidth > maxWidth) newLeftWidth = maxWidth;
 
     setLeftWidth(newLeftWidth);
   };
