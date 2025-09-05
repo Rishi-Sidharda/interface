@@ -32,7 +32,12 @@ export default function ResizableColumns() {
       onMouseUp={handleMouseUp}
     >
       {/* Left panel */}
-      <div className={`bg-amber-100`} style={{ width: `${leftWidth}%` }}></div>
+      <div className={`bg-amber-100`} style={{ width: `${leftWidth}%` }}>
+        <div className="h-full flex flex-col">
+          <div className={`bg-fuchsia-200 flex-1`}></div>
+          <div className={`bg-red-200 flex-6`}></div>
+        </div>
+      </div>
 
       {/* Divider */}
       <div
