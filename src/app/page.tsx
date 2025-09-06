@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
+import createDomTree from "../scripts/domtree";
 
 export default function ResizableColumns() {
-  const [leftWidth, setLeftWidth] = useState(22); // initial % for left
+  const [leftWidth, setLeftWidth] = useState(20); // initial % for left
   const [isDragging, setIsDragging] = useState(false);
 
   const minWidth = 15;
@@ -44,7 +45,11 @@ export default function ResizableColumns() {
             <div
               className={`bg-[rgb(27,27,28)] flex-1 border-b-2 border-black`}
             ></div>
-            <div className={`bg-[rgb(27,27,28)] flex-8`}></div>
+            <div
+              className={`bg-[rgb(27,27,28)] flex-8 justify-center pt-2 pl-3`}
+            >
+              <h1 className="text-2xl ">DOM Tree</h1>
+            </div>
           </div>
         </div>
 
