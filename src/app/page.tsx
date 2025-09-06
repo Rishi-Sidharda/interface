@@ -2,7 +2,7 @@
 import { useState } from "react";
 
 export default function ResizableColumns() {
-  const [leftWidth, setLeftWidth] = useState(30); // initial % for left
+  const [leftWidth, setLeftWidth] = useState(22); // initial % for left
   const [isDragging, setIsDragging] = useState(false);
 
   const minWidth = 15;
