@@ -27,7 +27,7 @@ export default function ResizableColumns() {
 
   return (
     <div>
-      <div className="absolute top-0 left-0 bg-gray-950 size-[100%] z-0 w-screen h-screen">
+      <div className="absolute top-0 left-0 bg-neutral-950 w-screen h-screen flex items-center justify-center z-0">
         {/** KEEP IFRAME HERE */}
       </div>
       <div
@@ -36,27 +36,32 @@ export default function ResizableColumns() {
         onMouseUp={handleMouseUp}
       >
         {/* Left panel */}
-        <div className={`bg-amber-100`} style={{ width: `${leftWidth}%` }}>
+        <div
+          className={`bg-amber-100 shadow-2xl shadow-black`}
+          style={{ width: `${leftWidth}%` }}
+        >
           <div className="h-full flex flex-col">
-            <div className={`bg-fuchsia-200 flex-1`}></div>
-            <div className={`bg-red-200 flex-6`}></div>
+            <div
+              className={`bg-[rgb(27,27,28)] flex-1 border-b-2 border-black`}
+            ></div>
+            <div className={`bg-[rgb(27,27,28)] flex-8`}></div>
           </div>
         </div>
 
         {/* Divider */}
         <div
-          className="w-1 bg-gray-400 cursor-col-resize"
+          className="w-1.5  cursor-col-resize"
           onMouseDown={() => setIsDragging(true)}
         ></div>
 
         {/* Middle panel */}
         <div
-          className="bg-blue-300 flex-1 "
+          className="bg-blue-300 flex-1 opacity-0"
           style={{ width: `${100 - leftWidth - 30}%` }}
         ></div>
 
         {/* Right panel */}
-        <div className="w-[22%] bg-green-200"></div>
+        <div className="w-[22%] bg-[rgb(27,27,28)] shadow-2xl shadow-black"></div>
       </div>
     </div>
   );
