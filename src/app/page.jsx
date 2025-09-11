@@ -168,7 +168,7 @@ export default function HtmlCanvasRenderer() {
 
           <div
             ref={containerRef}
-            className="relative border border-blue-950 flex h-96 overflow-auto p-4 bg-[#000e23] items-center justify-center"
+            className="relative border border-blue-950 flex h-96 overflow-auto p-4 bg-[#000e23] items-center justify-center hide-scrollbar"
             style={{ minHeight: 800, minWidth: 1200 }}
           >
             {/* Rendered HTML */}
