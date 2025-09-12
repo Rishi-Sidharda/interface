@@ -70,7 +70,6 @@ export default function HtmlCanvasRenderer() {
           </div>
         </div>
       </div>
-
   `);
 
   const containerRef = useRef(null);
@@ -212,33 +211,34 @@ export default function HtmlCanvasRenderer() {
   }, [selectedPath]);
 
   return (
-    <div className="bg-gray-950">
-      <div className="flex h-screen w-full">
-        {/* Left Container box */}
-        <div
-          className="
+    (
+      <div className="bg-gray-950">
+        <div className="flex h-screen w-full">
+          {/* Left Container box */}
+          <div
+            className="
           shadow-md bg-gray-900 absolute left-0 top-0 h-full
           w-[4%] hover:w-[20%] transition-all duration-300 ease-in-out
           z-50 group overflow-hidden
         "
-        >
-          {/* Collapsed content (visible by default) */}
-          <div
-            className="
+          >
+            {/* Collapsed content (visible by default) */}
+            <div
+              className="
             flex mt-5 justify-center h-full text-white
             transition-all duration-200 ease-in-out
             group-hover:opacity-0 group-hover:scale-95
           "
-          >
-            <Avatar>
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-          </div>
+            >
+              <Avatar>
+                <AvatarImage src="https://github.com/shadcn.png" />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
+            </div>
 
-          {/* Expanded content (appears on hover) */}
-          <div
-            className="
+            {/* Expanded content (appears on hover) */}
+            <div
+              className="
             absolute inset-0 px-4 py-6 flex flex-col justify-start gap-3
             text-white
             opacity-0 translate-x-2 scale-95
@@ -246,57 +246,60 @@ export default function HtmlCanvasRenderer() {
             transition-all duration-300
             pointer-events-none group-hover:pointer-events-auto
           "
+            >
+              <h3 className="text-lg font-semibold">Expanded menu</h3>
+              <p className="text-sm text-gray-300">
+                Links, settings, or whatever you want.
+              </p>
+              {/* add buttons/links here */}
+            </div>
+          </div>
+
+          {/* Middle Container box */}
+          <div
+            ref={containerRef}
+            className="shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
+            style={{ width: "75%", minHeight: "calc(100vh - 3rem)" }}
           >
-            <h3 className="text-lg font-semibold">Expanded menu</h3>
-            <p className="text-sm text-gray-300">
-              Links, settings, or whatever you want.
-            </p>
-            {/* add buttons/links here */}
+            {/* Rendered HTML */}
+            <div
+              className="render-wrapper cursor-pointer flex items-center justify-center"
+              style={{
+                overflow: "auto",
+                transform: `scale(${scale})`,
+                transformOrigin: "center center",
+              }}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+
+            {/* Highlight overlay */}
+            {highlightRect && (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  pointerEvents: "none",
+                  top: highlightRect.top + "px",
+                  left: highlightRect.left - 0.5 + "px",
+                  width: highlightRect.width + "px",
+                  height: highlightRect.height + "px",
+                  outline: "3px solid rgba(124,58,237,0.9)",
+                  outlineOffset: "-2px",
+                  borderRadius: 0,
+                  zIndex: 40,
+                }}
+              />
+            )}
+          </div>
+
+          {/* Right container box */}
+          <div className="shadow-md bg-gray-900" style={{ width: "25%" }}>
+            {/* Your right content */}
           </div>
         </div>
-
-        {/* Middle Container box */}
-        <div
-          ref={containerRef}
-          className="shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
-          style={{ width: "75%", minHeight: "calc(100vh - 3rem)" }}
-        >
-          {/* Rendered HTML */}
-          <div
-            className="render-wrapper cursor-pointer flex items-center justify-center"
-            style={{
-              overflow: "auto",
-              transform: `scale(${scale})`,
-              transformOrigin: "center center",
-            }}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
-
-          {/* Highlight overlay */}
-          {highlightRect && (
-            <div
-              aria-hidden
-              style={{
-                position: "absolute",
-                pointerEvents: "none",
-                top: highlightRect.top + "px",
-                left: highlightRect.left - 0.5 + "px",
-                width: highlightRect.width + "px",
-                height: highlightRect.height + "px",
-                outline: "3px solid rgba(124,58,237,0.9)",
-                outlineOffset: "-2px",
-                borderRadius: 0,
-                zIndex: 40,
-              }}
-            />
-          )}
-        </div>
-
-        {/* Right container box */}
-        <div className="shadow-md bg-gray-900" style={{ width: "25%" }}>
-          {/* Your right content */}
-        </div>
       </div>
-    </div>
+    ),
+    html,
+    setHtml
   );
 }
