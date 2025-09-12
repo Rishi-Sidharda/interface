@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function HtmlCanvasRenderer() {
   const [html, setHtml] = useState(`
@@ -229,7 +230,10 @@ export default function HtmlCanvasRenderer() {
             group-hover:opacity-0 group-hover:scale-95
           "
           >
-            <h1>HI</h1>
+            <Avatar>
+              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
           </div>
 
           {/* Expanded content (appears on hover) */}
