@@ -156,51 +156,51 @@ export default function HtmlCanvasRenderer() {
   }, [selectedPath]);
 
   return (
-    <div className="p-4 min-h-screen bg-[#000814]">
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <h3 className=" text-white">Canvas preview</h3>
-            <div className="text-xs text-slate-500">
-              Click elements to select — press Delete to remove
-            </div>
-          </div>
-
+    <div className=" min-h-screen bg-[#000814]">
+      <div className="flex h-screen w-full ">
+        {/**Left Container box */}
+        <div className="w-1/4 bg-gray-950  shadow-md">
+          {/* Your left content */}
+        </div>
+        {/** Middle Container box */}
+        <div
+          ref={containerRef}
+          className="w-1/2 bg-[#000e23]    shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
+          style={{ minHeight: "calc(100vh - 3rem)", minWidth: 1200 }}
+        >
+          {/* Rendered HTML */}
           <div
-            ref={containerRef}
-            className="relative border border-blue-950 flex h-96 overflow-auto p-4 bg-[#000e23] items-center justify-center hide-scrollbar"
-            style={{ minHeight: 800, minWidth: 1200 }}
-          >
-            {/* Rendered HTML */}
-            <div
-              className="render-wrapper"
-              style={{
-                overflow: "auto",
-                transform: `scale(${scale})`,
-                transformOrigin: "center center",
-              }}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+            className="render-wrapper"
+            style={{
+              overflow: "auto",
+              transform: `scale(${scale})`,
+              transformOrigin: "center center",
+            }}
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
 
-            {/* Highlight overlay */}
-            {highlightRect && (
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  pointerEvents: "none",
-                  top: highlightRect.top - 0.5 + "px",
-                  left: highlightRect.left - 0.5 + "px",
-                  width: highlightRect.width + "px",
-                  height: highlightRect.height + "px",
-                  outline: "3px solid rgba(124,58,237,0.9)",
-                  outlineOffset: "-2px",
-                  borderRadius: 0,
-                  zIndex: 40,
-                }}
-              />
-            )}
-          </div>
+          {/* Highlight overlay */}
+          {highlightRect && (
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                pointerEvents: "none",
+                top: highlightRect.top - 0.5 + "px",
+                left: highlightRect.left - 0.5 + "px",
+                width: highlightRect.width + "px",
+                height: highlightRect.height + "px",
+                outline: "3px solid rgba(124,58,237,0.9)",
+                outlineOffset: "-2px",
+                borderRadius: 0,
+                zIndex: 40,
+              }}
+            />
+          )}
+        </div>
+        {/** Right container box */}
+        <div className="w-1/4 bg-gray-950 shadow-md">
+          {/* Your right content */}
         </div>
       </div>
     </div>
