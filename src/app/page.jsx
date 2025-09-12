@@ -159,13 +159,13 @@ export default function HtmlCanvasRenderer() {
     <div className=" min-h-screen bg-[#000814]">
       <div className="flex h-screen w-full ">
         {/**Left Container box */}
-        <div className="w-1/4 bg-gray-950  shadow-md">
+        <div className="w-1/25 bg-gray-900  shadow-md">
           {/* Your left content */}
         </div>
         {/** Middle Container box */}
         <div
           ref={containerRef}
-          className="w-1/2 bg-[#000e23]    shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
+          className="w-1/2 bg-grey-950 shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
           style={{ minHeight: "calc(100vh - 3rem)", minWidth: 1200 }}
         >
           {/* Rendered HTML */}
@@ -199,7 +199,7 @@ export default function HtmlCanvasRenderer() {
           )}
         </div>
         {/** Right container box */}
-        <div className="w-1/4 bg-gray-950 shadow-md">
+        <div className="w-1/4 bg-gray-900 shadow-md">
           {/* Your right content */}
         </div>
       </div>
