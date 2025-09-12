@@ -4,17 +4,72 @@ import React, { useRef, useState, useEffect } from "react";
 
 export default function HtmlCanvasRenderer() {
   const [html, setHtml] = useState(`
-  <div style="font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding:24px; background:#f6f7f3; min-height:600px; width: 600px;">
-    <h1 style="color:#0f172a; margin:0 0 8px 0;">Hello — editable canvas</h1>
-    <p style="margin:0 0 12px 0; color:#334155;">Click any element to select it. Inline styles are preserved.</p>
-    <button id="cta" style="padding:8px 12px; border-radius:8px; background:#7c3aed; color:white; border:none;">Click me</button>
-    <div style="margin-top:16px; display:flex; gap:8px;">
-      <div style="width:120px; height:80px; background:#ef4444; border-radius:6px;"></div>
-      <div style="width:120px; height:80px; background:#10b981; border-radius:6px;"></div>
-      <div style="width:120px; height:80px; background:#10b481; border-radius:6px;"></div>
-      <div style="width:120px; height:80px; background:#10bf81; border-radius:6px;"></div>
-    </div>
-  </div>
+        <div 
+        style="
+          width: 50%; 
+          min-width: 300px; 
+          max-width: 600px; 
+          background: white; 
+          border-radius: 12px; 
+          box-shadow: 0 6px 18px rgba(0,0,0,0.15); 
+          overflow: hidden; 
+          font-family: sans-serif;
+        "
+      >
+        <!-- Image -->
+        <div style="width: 100%; height: 180px; overflow: hidden;">
+          <img 
+            src="https://images.unsplash.com/photo-1506765515384-028b60a970df?q=80&w=800" 
+            alt="Card image" 
+            style="width: 100%; height: 100%; object-fit: cover;"
+          />
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 16px;">
+          <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 600; color: #111;">
+            Card Title
+          </h3>
+          <p style="margin: 0 0 12px 0; font-size: 14px; color: #555; line-height: 1.4;">
+            This is a simple card component with inline styles only. It contains an image, some text, and actions at the bottom.
+          </p>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 8px;">
+            <button 
+              style="
+                flex: 1;
+                padding: 10px 0; 
+                background: #7c3aed; 
+                color: white; 
+                border: none; 
+                border-radius: 8px; 
+                font-size: 14px; 
+                font-weight: 600; 
+                cursor: pointer;
+              "
+            >
+              Primary
+            </button>
+            <button 
+              style="
+                flex: 1;
+                padding: 10px 0; 
+                background: #f3f4f6; 
+                color: #111; 
+                border: none; 
+                border-radius: 8px; 
+                font-size: 14px; 
+                font-weight: 600; 
+                cursor: pointer;
+              "
+            >
+              Secondary
+            </button>
+          </div>
+        </div>
+      </div>
+
   `);
 
   const containerRef = useRef(null);
@@ -156,21 +211,55 @@ export default function HtmlCanvasRenderer() {
   }, [selectedPath]);
 
   return (
-    <div className=" min-h-screen bg-[#000814]">
-      <div className="flex h-screen w-full ">
-        {/**Left Container box */}
-        <div className="w-1/25 bg-gray-900  shadow-md">
-          {/* Your left content */}
+    <div className="bg-gray-950">
+      <div className="flex h-screen w-full">
+        {/* Left Container box */}
+        <div
+          className="
+          shadow-md bg-gray-900 absolute left-0 top-0 h-full
+          w-[4%] hover:w-[20%] transition-all duration-300 ease-in-out
+          z-50 group overflow-hidden
+        "
+        >
+          {/* Collapsed content (visible by default) */}
+          <div
+            className="
+            flex mt-5 justify-center h-full text-white
+            transition-all duration-200 ease-in-out
+            group-hover:opacity-0 group-hover:scale-95
+          "
+          >
+            <h1>HI</h1>
+          </div>
+
+          {/* Expanded content (appears on hover) */}
+          <div
+            className="
+            absolute inset-0 px-4 py-6 flex flex-col justify-start gap-3
+            text-white
+            opacity-0 translate-x-2 scale-95
+            group-hover:opacity-100 group-hover:translate-x-0 group-hover:scale-100
+            transition-all duration-300
+            pointer-events-none group-hover:pointer-events-auto
+          "
+          >
+            <h3 className="text-lg font-semibold">Expanded menu</h3>
+            <p className="text-sm text-gray-300">
+              Links, settings, or whatever you want.
+            </p>
+            {/* add buttons/links here */}
+          </div>
         </div>
-        {/** Middle Container box */}
+
+        {/* Middle Container box */}
         <div
           ref={containerRef}
-          className="w-1/2 bg-grey-950 shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
-          style={{ minHeight: "calc(100vh - 3rem)", minWidth: 1200 }}
+          className="shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
+          style={{ width: "75%", minHeight: "calc(100vh - 3rem)" }}
         >
           {/* Rendered HTML */}
           <div
-            className="render-wrapper"
+            className="render-wrapper cursor-pointer flex items-center justify-center"
             style={{
               overflow: "auto",
               transform: `scale(${scale})`,
@@ -186,7 +275,7 @@ export default function HtmlCanvasRenderer() {
               style={{
                 position: "absolute",
                 pointerEvents: "none",
-                top: highlightRect.top - 0.5 + "px",
+                top: highlightRect.top + "px",
                 left: highlightRect.left - 0.5 + "px",
                 width: highlightRect.width + "px",
                 height: highlightRect.height + "px",
@@ -198,8 +287,9 @@ export default function HtmlCanvasRenderer() {
             />
           )}
         </div>
-        {/** Right container box */}
-        <div className="w-1/4 bg-gray-900 shadow-md">
+
+        {/* Right container box */}
+        <div className="shadow-md bg-gray-900" style={{ width: "25%" }}>
           {/* Your right content */}
         </div>
       </div>
