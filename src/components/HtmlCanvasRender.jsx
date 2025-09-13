@@ -141,6 +141,13 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     setSelectedStyles((prev) => ({ ...prev, [prop]: value }));
   }
 
+  // --- copy updated html ---
+  function copyHtmlToClipboard() {
+    navigator.clipboard.writeText(html).then(() => {
+      alert("Updated HTML copied to clipboard!");
+    });
+  }
+
   return (
     <div className="bg-gray-950">
       <div className="flex h-screen w-full">
@@ -221,7 +228,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
           {selectedPath ? (
             <>
               <h3 className="text-lg font-semibold mb-2">Edit Styles</h3>
-              <div className="text-sm space-y-2 max-h-[80vh] overflow-y-auto">
+              <div className="text-sm space-y-2 max-h-[70vh] overflow-y-auto">
                 {Object.entries(selectedStyles).map(([prop, value]) => (
                   <div key={prop} className="flex flex-col">
                     <label className="text-gray-400 text-xs">{prop}</label>
@@ -233,6 +240,14 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
                   </div>
                 ))}
               </div>
+
+              {/* ✅ New button */}
+              <button
+                onClick={copyHtmlToClipboard}
+                className="absolute bottom-4 max-w-fit right-4 mt-4 w-full bg-cyan-800 hover:bg-cyan-700 cursor-pointer text-white py-2 px-4 transition-colors"
+              >
+                Copy code
+              </button>
             </>
           ) : (
             <p className="text-gray-400">Click an element to edit styles</p>

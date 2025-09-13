@@ -6,6 +6,7 @@ import HtmlCanvasRenderer from "@/components/HtmlCanvasRender";
 export default function HomePage() {
   const [html, setHtml] = useState(`
     <div style="display:flex; gap:8px; max-width:400px; margin:20px auto;">
+    
       <input 
         type="search" 
         placeholder="Search..." 
