@@ -3,6 +3,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
+import StyledInput from "./StyledInput";
 
 export default function HtmlCanvasRenderer({ html, setHtml }) {
   const containerRef = useRef(null);
@@ -292,17 +293,15 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
         >
           {selectedPath ? (
             <>
-              <h3 className="text-lg font-semibold mb-2">Edit Styles</h3>
+              <h3 className="text-2xl font-bold mb-2">Edit Styles</h3>
               <div className="text-sm space-y-2 max-h-[70vh] overflow-y-auto">
                 {Object.entries(selectedStyles).map(([prop, value]) => (
-                  <div key={prop} className="flex flex-col">
-                    <label className="text-gray-400 text-xs">{prop}</label>
-                    <input
-                      className="bg-gray-800 text-white text-sm rounded p-1"
-                      value={value}
-                      onChange={(e) => handleStyleChange(prop, e.target.value)}
-                    />
-                  </div>
+                  <StyledInput
+                    key={prop}
+                    prop={prop}
+                    value={value}
+                    onChange={handleStyleChange}
+                  />
                 ))}
               </div>
             </>
