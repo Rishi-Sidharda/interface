@@ -375,6 +375,24 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
   return (
     <div className="bg-[#131313]">
       <div className="flex h-screen w-full">
+        {/* Left Container */}
+        <div className="group absolute h-screen bg-[#121212] border-r border-[#1e1e1e] transition-all duration-300 w-[4%] hover:w-[20%] overflow-hidden">
+          {/* Content when collapsed (4%) */}
+          <div className="flex justify-center items-center h-full transition-all duration-300 opacity-100 group-hover:opacity-0 group-hover:translate-x-[-20px] z-100">
+            <span className="text-white">🌑</span>
+          </div>
+
+          {/* Content when expanded (25%) */}
+          <div className="absolute inset-0 flex flex-col justify-center items-center h-full transition-all duration-300 opacity-0 translate-x-5 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#121212] z-100">
+            <span className="text-white text-lg">Expanded Menu</span>
+            <ul className="text-white space-y-2 mt-4">
+              <li>Dashboard</li>
+              <li>Settings</li>
+              <li>Profile</li>
+            </ul>
+          </div>
+        </div>
+
         {/* Middle container - FIXED */}
         <div
           ref={containerRef}
