@@ -363,6 +363,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
         transform: `scale(${scale})`,
         transformOrigin: "top left",
         width: `${100 / scale}%`,
+        height: `${100 / scale}%`,
       };
     } else {
       return {
@@ -374,41 +375,37 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
   return (
     <div className="bg-[#131313]">
       <div className="flex h-screen w-full">
-        {/* Left menu */}
-        <div
-          className="
-            shadow-md bg-[1e1e1e] absolute left-0 top-0 h-full
-            w-[4%] hover:w-[20%] transition-all duration-300 ease-in-out
-            z-50 group overflow-hidden border-2 border-[#1e1e1e] background-[#131313] opacity-100
-          "
-        >
-          <div
-            className="
-              flex justify-center h-full text-white
-              transition-all duration-200 ease-in-out
-               group-hover:scale-95
-              bg-[#131313]
-            "
-          >
-            <Avatar className="mt-4 bg[#131313]">
-              <AvatarImage src="https://shadcn.avatar.png" alt="logo" />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-
-        {/* Middle container */}
+        {/* Middle container - FIXED */}
         <div
           ref={containerRef}
           className="shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
-          style={{ width: "75%", minHeight: "calc(100vh - 3rem)" }}
+          style={{
+            width: "75%",
+            minHeight: "calc(100vh - 3rem)",
+            marginLeft: "4%", // Add left margin to account for sidebar
+            position: "relative",
+            zIndex: 10, // Ensure it's below the sidebar
+          }}
         >
-          {/* Rendered HTML */}
+          {/* Content wrapper with proper clipping */}
           <div
-            className="render-wrapper cursor-pointer flex items-center justify-center"
-            style={getZoomStyle(scale)}
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+            className="w-full h-full relative"
+            style={{
+              overflow: "hidden", // Prevent content from overflowing
+              clipPath: "inset(0)", // Clip any overflow
+            }}
+          >
+            {/* Rendered HTML */}
+            <div
+              className="render-wrapper cursor-pointer flex items-center justify-center w-full h-full"
+              style={{
+                ...getZoomStyle(scale),
+                minWidth: "100%",
+                minHeight: "100%",
+              }}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>
 
           {highlightRect && (
             <div
@@ -444,7 +441,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
         </div>
 
         {/* Copy button */}
-        <div className="absolute right-[27%] top-5">
+        <div className="absolute right-[27%] top-5 z-40">
           <Button
             onClick={copyHtmlToClipboard}
             className="max-w-fit w-full bg-cyan-800 hover:bg-cyan-700 cursor-pointer text-white py-2 px-4 transition-colors"
