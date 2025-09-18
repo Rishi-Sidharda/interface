@@ -1,69 +1,9 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 
-// ---------------- DOM TREE COMPONENT ----------------
-function DomTree({ node, wrapper, onSelect, selectedPath, getUniqueSelector }) {
-  if (node.nodeType !== 1) return null; // only render element nodes
-
-  const selector = getUniqueSelector(node, wrapper);
-  const isSelected = selectedPath === selector;
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <div className="ml-2">
-      <div
-        className={`flex items-center gap-1 cursor-pointer px-2 py-1 rounded ${
-          isSelected
-            ? "bg-purple-600 text-white"
-            : "hover:bg-gray-700 text-gray-300"
-        }`}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(selector);
-        }}
-      >
-        {node.children.length > 0 && (
-          <span
-            className="text-xs text-gray-400"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(!expanded);
-            }}
-          >
-            {expanded ? "▼" : "▶"}
-          </span>
-        )}
-        <span className="text-blue-400">&lt;{node.tagName.toLowerCase()}</span>
-        {node.id && <span className="text-green-400">#{node.id}</span>}
-        {node.classList.length > 0 && (
-          <span className="text-yellow-400">
-            .{[...node.classList].join(".")}
-          </span>
-        )}
-        <span className="text-blue-400">&gt;</span>
-      </div>
-
-      {expanded && (
-        <div className="ml-4 border-l border-gray-700 pl-2">
-          {Array.from(node.children).map((child, idx) => (
-            <DomTree
-              key={idx}
-              node={child}
-              wrapper={wrapper}
-              onSelect={onSelect}
-              selectedPath={selectedPath}
-              getUniqueSelector={getUniqueSelector}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---------------- MAIN RENDERER ----------------
 export default function HtmlCanvasRenderer({ html, setHtml }) {
   const containerRef = useRef(null);
   const [selectedPath, setSelectedPath] = useState(null);
@@ -79,7 +19,10 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
   const [newAttrName, setNewAttrName] = useState("");
   const [newAttrValue, setNewAttrValue] = useState("");
   const [contentValue, setContentValue] = useState("");
-  const [contentType, setContentType] = useState(null);
+  const [contentType, setContentType] = useState(null); // "text" | "img" | "input" | null
+
+  // --- DOM tree state ---
+  const [domTree, setDomTree] = useState([]);
 
   // --- build unique selector ---
   function getUniqueSelector(el, wrapper) {
@@ -139,6 +82,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
   function getAllAttributes(el) {
     const attrs = {};
     for (let attr of el.attributes) {
+      // Skip style attribute as it's handled separately
       if (attr.name !== "style") {
         attrs[attr.name] = attr.value;
       }
@@ -146,8 +90,8 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     return attrs;
   }
 
-  // --- unified element selection ---
-  function handleSelectElement(selector) {
+  // --- select element by selector (used by tree clicks as well) ---
+  function selectElementBySelector(selector) {
     const container = containerRef.current;
     if (!container) return;
     const wrapper = container.querySelector(".render-wrapper");
@@ -192,7 +136,32 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     if (rect) setHighlightRect(rect);
   }
 
-  // --- click handler for canvas ---
+  // --- build DOM tree from the rendered nodes (no DOMParser) ---
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      setDomTree([]);
+      return;
+    }
+    const wrapper = container.querySelector(".render-wrapper");
+    if (!wrapper) {
+      setDomTree([]);
+      return;
+    }
+
+    function build(el) {
+      return {
+        tag: el.tagName.toLowerCase(),
+        selector: getUniqueSelector(el, wrapper),
+        children: Array.from(el.children).map((child) => build(child)),
+      };
+    }
+
+    const tree = Array.from(wrapper.children).map((child) => build(child));
+    setDomTree(tree);
+  }, [html]);
+
+  // --- click handler ---
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -214,7 +183,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
       }
 
       const selector = getUniqueSelector(target, wrapper);
-      handleSelectElement(selector);
+      selectElementBySelector(selector);
 
       e.stopPropagation();
     }
@@ -275,38 +244,54 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     };
   }, [selectedPath, scale]);
 
+  // --- keep highlight in sync with edits ---
   useEffect(() => {
     recalcHighlight();
   }, [html, selectedPath, scale, contentValue]);
 
-  // ---------------- EDIT HANDLERS ----------------
-  // (unchanged — same as your version)
+  // --- edit styles ---
   function handleStyleChange(prop, value) {
     if (!selectedPath) return;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const wrapper = doc.body;
+
+    const container = containerRef.current;
+    if (!container) return;
+    const wrapper = container.querySelector(".render-wrapper");
+    if (!wrapper) return;
     const target = wrapper.querySelector(selectedPath);
     if (!target) return;
+
     target.style[prop] = value;
+
     let newHtml = "";
-    for (let child of wrapper.children) newHtml += child.outerHTML;
+    for (let child of wrapper.children) {
+      newHtml += child.outerHTML;
+    }
+
     setHtml(newHtml);
     setSelectedStyles((prev) => ({ ...prev, [prop]: value }));
     recalcHighlight();
   }
 
+  // --- delete styles ---
   function handleStyleDelete(prop) {
     if (!selectedPath) return;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const wrapper = doc.body;
+
+    const container = containerRef.current;
+    if (!container) return;
+    const wrapper = container.querySelector(".render-wrapper");
+    if (!wrapper) return;
     const target = wrapper.querySelector(selectedPath);
     if (!target) return;
+
     target.style.removeProperty(prop);
+
     let newHtml = "";
-    for (let child of wrapper.children) newHtml += child.outerHTML;
+    for (let child of wrapper.children) {
+      newHtml += child.outerHTML;
+    }
+
     setHtml(newHtml);
+
     setSelectedStyles((prev) => {
       const newStyles = { ...prev };
       delete newStyles[prop];
@@ -315,6 +300,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     recalcHighlight();
   }
 
+  // --- add new style ---
   function handleAddStyle() {
     if (!newProp.trim() || !newValue.trim()) return;
     handleStyleChange(newProp.trim(), newValue.trim());
@@ -322,18 +308,30 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     setNewValue("");
   }
 
+  // --- edit attributes ---
   function handleAttributeChange(attrName, value) {
     if (!selectedPath) return;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const wrapper = doc.body;
+
+    const container = containerRef.current;
+    if (!container) return;
+    const wrapper = container.querySelector(".render-wrapper");
+    if (!wrapper) return;
     const target = wrapper.querySelector(selectedPath);
     if (!target) return;
-    if (value.trim() === "") target.removeAttribute(attrName);
-    else target.setAttribute(attrName, value);
+
+    if (value.trim() === "") {
+      target.removeAttribute(attrName);
+    } else {
+      target.setAttribute(attrName, value);
+    }
+
     let newHtml = "";
-    for (let child of wrapper.children) newHtml += child.outerHTML;
+    for (let child of wrapper.children) {
+      newHtml += child.outerHTML;
+    }
+
     setHtml(newHtml);
+
     if (value.trim() === "") {
       setSelectedAttributes((prev) => {
         const newAttrs = { ...prev };
@@ -346,10 +344,12 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     recalcHighlight();
   }
 
+  // --- delete attribute ---
   function handleAttributeDelete(attrName) {
     handleAttributeChange(attrName, "");
   }
 
+  // --- add new attribute ---
   function handleAddAttribute() {
     if (!newAttrName.trim()) return;
     handleAttributeChange(newAttrName.trim(), newAttrValue.trim());
@@ -357,14 +357,18 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
     setNewAttrValue("");
   }
 
+  // --- edit content ---
   function handleContentChange(newContent) {
     setContentValue(newContent);
     if (!selectedPath) return;
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const wrapper = doc.body;
+
+    const container = containerRef.current;
+    if (!container) return;
+    const wrapper = container.querySelector(".render-wrapper");
+    if (!wrapper) return;
     const target = wrapper.querySelector(selectedPath);
     if (!target) return;
+
     if (contentType === "img") {
       target.setAttribute("src", newContent);
     } else if (contentType === "input") {
@@ -376,22 +380,29 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
         }
       }
     }
+
     let newHtml = "";
-    for (let child of wrapper.children) newHtml += child.outerHTML;
+    for (let child of wrapper.children) {
+      newHtml += child.outerHTML;
+    }
+
     setHtml(newHtml);
     recalcHighlight();
   }
 
+  // --- copy updated html ---
   function copyHtmlToClipboard() {
     navigator.clipboard.writeText(html).then(() => {
       alert("Updated HTML copied to clipboard!");
     });
   }
 
+  // --- zoom style helper ---
   function getZoomStyle(scale) {
     const isFirefox =
       typeof navigator !== "undefined" &&
       navigator.userAgent.toLowerCase().includes("firefox");
+
     if (isFirefox) {
       return {
         transform: `scale(${scale})`,
@@ -400,57 +411,82 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
         height: `${100 / scale}%`,
       };
     } else {
-      return { zoom: scale };
+      return {
+        zoom: scale,
+      };
     }
   }
 
-  // ---------------- JSX ----------------
+  // --- render a tree node recursively ---
+  function TreeNode({ node, depth = 0 }) {
+    return (
+      <div>
+        <div
+          className={`text-xs truncate cursor-pointer py-0.5 px-2 rounded ${
+            selectedPath === node.selector ? "bg-gray-700" : "hover:bg-gray-800"
+          }`}
+          style={{ paddingLeft: `${8 + depth * 12}px` }}
+          onClick={() => selectElementBySelector(node.selector)}
+          title={node.selector}
+        >
+          &lt;{node.tag}&gt;
+        </div>
+        {node.children &&
+          node.children.map((c) => (
+            <TreeNode key={c.selector} node={c} depth={depth + 1} />
+          ))}
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#131313]">
       <div className="flex h-screen w-full">
-        {/* Left DOM tree sidebar */}
+        {/* Left Container */}
         <div className="group absolute h-screen bg-[#121212] border-r border-[#1e1e1e] transition-all duration-300 w-[4%] hover:w-[20%] overflow-hidden">
-          {/* Collapsed icon */}
+          {/* Content when collapsed (4%) */}
           <div className="flex justify-center items-center h-full transition-all duration-300 opacity-100 group-hover:opacity-0 group-hover:translate-x-[-20px] z-100">
             <span className="text-white">🌑</span>
           </div>
-          {/* Expanded DOM tree */}
-          <div className="absolute inset-0 flex flex-col h-full overflow-auto transition-all duration-300 opacity-0 translate-x-5 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#121212] z-100 p-2">
-            {html &&
-              (() => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                const wrapper = doc.body;
-                return Array.from(wrapper.children).map((child, idx) => (
-                  <DomTree
-                    key={idx}
-                    node={child}
-                    wrapper={wrapper}
-                    onSelect={(selector) => handleSelectElement(selector)}
-                    selectedPath={selectedPath}
-                    getUniqueSelector={getUniqueSelector}
-                  />
-                ));
-              })()}
+
+          {/* Content when expanded (20%) - DOM tree */}
+          <div className="absolute inset-0 flex flex-col h-full transition-all duration-300 opacity-0 translate-x-5 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-[#121212] z-100">
+            <div className="p-3 border-b border-[#1e1e1e]">
+              <span className="text-white text-lg">DOM Tree</span>
+            </div>
+            <div className="px-2 py-3 overflow-auto text-white text-sm">
+              {domTree && domTree.length ? (
+                domTree.map((node) => (
+                  <TreeNode key={node.selector} node={node} />
+                ))
+              ) : (
+                <div className="text-gray-400">No elements</div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Middle canvas */}
+        {/* Middle container - FIXED */}
         <div
           ref={containerRef}
           className="shadow-md relative flex overflow-auto items-center justify-center hide-scrollbar"
           style={{
             width: "75%",
             minHeight: "calc(100vh - 3rem)",
-            marginLeft: "4%",
+            marginLeft: "4%", // Add left margin to account for sidebar
             position: "relative",
-            zIndex: 10,
+            zIndex: 10, // Ensure it's below the sidebar
           }}
         >
+          {/* Content wrapper with proper clipping */}
           <div
             className="w-full h-full relative"
-            style={{ overflow: "hidden", clipPath: "inset(0)" }}
+            style={{
+              overflow: "hidden", // Prevent content from overflowing
+              clipPath: "inset(0)", // Clip any overflow
+            }}
           >
+            {/* Rendered HTML */}
             <div
               className="render-wrapper cursor-pointer flex items-center justify-center w-full h-full"
               style={{
@@ -484,7 +520,11 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
           <div className="absolute bottom-5 right-5 flex flex-col items-center text-white z-50">
             <div className="flex items-center">
               <div
-                style={{ width: `110px`, height: "2px", backgroundColor: "white" }}
+                style={{
+                  width: `110px`,
+                  height: "2px",
+                  backgroundColor: "white",
+                }}
               />
             </div>
             <span className="text-xs mt-1">{Math.round(scale * 100)}%</span>
@@ -501,7 +541,7 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
           </Button>
         </div>
 
-        {/* Right properties panel */}
+        {/* Right panel */}
         <div
           className="shadow-md bg-[#121212] text-white p-4 flex flex-col justify-between border-2 border-[#1e1e1e] overflow-hidden"
           style={{ width: "25%" }}
@@ -544,7 +584,9 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
 
                 {/* Edit Attributes */}
                 <div className="mb-4">
-                  <h3 className="text-lg font-semibold mb-2">Edit Attributes</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Edit Attributes
+                  </h3>
                   <div className="text-sm space-y-2 max-h-32 overflow-y-auto">
                     {Object.entries(selectedAttributes).map(
                       ([attrName, value]) => (
@@ -608,11 +650,13 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
                 {/* Edit Styles */}
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold mb-2">Edit Styles</h3>
-                  <div className="text-sm space-y-2 overflow-y-auto">
+                  <div className="text-sm space-y-2  overflow-y-auto">
                     {Object.entries(selectedStyles).map(([prop, value]) => (
                       <div key={prop} className="flex items-center gap-2">
                         <div className="flex flex-col flex-1">
-                          <label className="text-gray-400 text-xs">{prop}</label>
+                          <label className="text-gray-400 text-xs">
+                            {prop}
+                          </label>
                           <input
                             className="bg-gray-800 text-white text-sm rounded p-1"
                             value={value}
@@ -635,7 +679,9 @@ export default function HtmlCanvasRenderer({ html, setHtml }) {
 
                   {/* Add new style */}
                   <div className="mt-3 pt-3 border-t border-gray-600">
-                    <h4 className="text-sm font-semibold mb-2">Add new style</h4>
+                    <h4 className="text-sm font-semibold mb-2">
+                      Add new style
+                    </h4>
                     <div className="flex gap-2 mb-2">
                       <input
                         type="text"
